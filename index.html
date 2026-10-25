@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <title>AuraOS 2.0 with Python IDLE</title>
-  <!-- Pyodide Engine: WebAssembly ke zariye browser mein Python chalane ke liye -->
-  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
+  <!-- Pyodide CDN -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.23.4/full/pyodide.js"></script>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 80% 20%, #1e1b4b, #0f172a 70%);
-      --surface: rgba(15, 23, 42, 0.82);
+      --surface: rgba(15, 23, 42, 0.85);
       --border: rgba(255, 255, 255, 0.12);
       --accent: #38bdf8;
       --text: #f8fafc;
@@ -27,7 +27,6 @@
       transition: background 0.4s ease;
     }
 
-    /* Desktop Icons Area */
     #desktop {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: var(--taskbar-h);
@@ -69,7 +68,6 @@
       text-align: center;
     }
 
-    /* Windows Architecture */
     .os-window {
       position: absolute;
       width: 460px;
@@ -126,7 +124,6 @@
       user-select: text;
     }
 
-    /* Smart Scratchpad */
     textarea.notepad-area {
       width: 100%; height: 100%;
       background: transparent;
@@ -139,7 +136,6 @@
       resize: none;
     }
 
-    /* Terminal */
     .term-container {
       font-family: 'Courier New', Courier, monospace;
       font-size: 12px;
@@ -160,7 +156,6 @@
       font-family: inherit;
     }
 
-    /* Web Vault Links */
     .link-form { display: flex; gap: 8px; margin-bottom: 12px; }
     .link-input {
       flex: 1;
@@ -193,7 +188,6 @@
     .link-item a { color: var(--accent); text-decoration: none; }
     .link-del { cursor: pointer; color: #ef4444; font-weight: bold; }
 
-    /* Settings */
     .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .theme-card {
       border: 1px solid var(--border);
@@ -206,7 +200,6 @@
     }
     .theme-card:hover { background: rgba(255,255,255,0.08); }
 
-    /* Taskbar */
     #taskbar {
       position: absolute;
       bottom: 0; left: 0; right: 0;
@@ -258,7 +251,6 @@
     }
     .audio-btn.playing { color: #4ade80; border-color: #4ade80; }
 
-    /* Start Menu Drawer */
     #start-menu {
       position: absolute;
       bottom: calc(var(--taskbar-h) + 10px);
@@ -296,7 +288,6 @@
     }
     .start-menu-item:hover { background: rgba(255,255,255,0.06); }
 
-    /* Panic/Boss Screen Overlay */
     #panic-screen {
       position: fixed;
       top: 0; left: 0; width: 100vw; height: 100vh;
@@ -349,25 +340,28 @@
   </div>
 
   <!-- Python IDLE Window -->
-  <div class="os-window" id="win-pyidle" style="top: 70px; left: 160px; width: 580px; height: 420px; display: none;">
+  <div class="os-window" id="win-pyidle" style="top: 60px; left: 140px; width: 620px; height: 440px; display: none;">
     <div class="win-header">
       <div class="traffic-lights">
         <button class="t-btn t-close" onclick="closeWin('win-pyidle')"></button>
         <button class="t-btn t-min" onclick="minWin('win-pyidle')"></button>
         <button class="t-btn t-max" onclick="maxWin('win-pyidle')"></button>
       </div>
-      <span class="win-title">Python 3.11 Interactive IDLE</span>
-      <button class="btn-action" style="padding: 3px 12px; font-size: 11px;" onclick="runPythonCode()">▶ Run</button>
+      <span class="win-title" id="py-title">Python 3 (WASM Core)</span>
+      <button class="btn-action" id="py-run-btn" style="padding: 3px 12px; font-size: 11px;" onclick="runPythonCode()">▶ Run</button>
     </div>
     <div class="win-body" style="display: flex; flex-direction: column; gap: 8px; padding: 10px;">
-      <textarea id="py-editor" style="flex: 1; background: rgba(0,0,0,0.45); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: #38bdf8; font-family: 'Courier New', monospace; font-size: 13px; outline: none; resize: none; line-height: 1.4;" spellcheck="false"># Write pure Python code here
-name = "Hacker"
-print(f"Executing Python inside AuraOS, {name}!")
+      <textarea id="py-editor" style="flex: 1; background: rgba(0,0,0,0.45); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: #38bdf8; font-family: 'Courier New', monospace; font-size: 13px; outline: none; resize: none; line-height: 1.4;" spellcheck="false"># Write Python code here
+print("Hello from WebAssembly Python!")
 
-squares = [x**2 for x in range(1, 6)]
-print(f"Calculated Squares: {squares}")
+items = ["AuraOS", "Python", "WebAssembly"]
+for idx, val in enumerate(items, 1):
+    print(f"{idx}. {val}")
+
+total = sum(range(1, 101))
+print(f"Sum of 1 to 100: {total}")
 </textarea>
-      <div style="height: 120px; background: rgba(0,0,0,0.65); border: 1px solid var(--border); border-radius: 6px; padding: 10px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #4ade80; white-space: pre-wrap;" id="py-output">>>> Python Engine ready to execute. Click '▶ Run'.</div>
+      <div style="height: 130px; background: rgba(0,0,0,0.65); border: 1px solid var(--border); border-radius: 6px; padding: 10px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #4ade80; white-space: pre-wrap;" id="py-output">>>> Initializing engine, please wait a moment...</div>
     </div>
   </div>
 
@@ -481,7 +475,6 @@ print(f"Calculated Squares: {squares}")
     let topZ = 10;
     const windows = ['win-notes', 'win-term', 'win-links', 'win-settings', 'win-pyidle'];
 
-    // Start Menu Toggle
     function toggleStart() {
       const menu = document.getElementById('start-menu');
       menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
@@ -494,17 +487,11 @@ print(f"Calculated Squares: {squares}")
       });
     }
 
-    // Window Management
     function openWin(id) {
       const win = document.getElementById(id);
       win.style.display = 'flex';
       focusWin(id);
       syncTaskbar();
-
-      // Python initialization on first open
-      if (id === 'win-pyidle' && !pyodideInstance) {
-        initPyodide();
-      }
     }
 
     function closeWin(id) {
@@ -526,7 +513,6 @@ print(f"Calculated Squares: {squares}")
       syncTaskbar();
     }
 
-    // Dynamic Taskbar Synchronization
     function syncTaskbar() {
       const container = document.getElementById('running-tasks');
       container.innerHTML = '';
@@ -549,7 +535,6 @@ print(f"Calculated Squares: {squares}")
       });
     }
 
-    // Draggable Windows
     windows.forEach(wId => {
       const win = document.getElementById(wId);
       if (!win) return;
@@ -571,38 +556,88 @@ print(f"Calculated Squares: {squares}")
       window.addEventListener('mouseup', () => dragging = false);
     });
 
-    // Pyodide Python Runner Logic
+    // Bulletproof Python WASM Loader
     let pyodideInstance = null;
-    async function initPyodide() {
+    let isPyodideLoading = false;
+
+    async function loadPythonEngine() {
+      if (pyodideInstance || isPyodideLoading) return;
+      isPyodideLoading = true;
       const out = document.getElementById('py-output');
-      out.innerText = ">>> Loading Python WebAssembly Engine...";
+      const title = document.getElementById('py-title');
+      
       try {
-        pyodideInstance = await loadPyodide();
-        out.innerText = ">>> Python 3.11 Loaded successfully!\n>>> Ready. Click '▶ Run' to execute code.";
-      } catch (e) {
-        out.innerText = ">>> Error loading Python runtime: " + e;
+        title.innerText = "Python (Downloading Engine...)";
+        out.innerText = ">>> Downloading Python runtime via WebAssembly (approx ~6MB, once only)...";
+        
+        pyodideInstance = await loadPyodide({
+          indexURL: "https://cdn.jsdelivr.net/pyodide/v0.23.4/full/"
+        });
+        
+        // Setup internal stdout redirect in pure Python
+        await pyodideInstance.runPythonAsync(`
+import sys
+import io
+
+class OutputCatcher(io.StringIO):
+    pass
+`);
+        title.innerText = "Python 3.11 (Online)";
+        out.innerText = ">>> Python runtime loaded successfully!\n>>> Click '▶ Run' to execute the script.";
+      } catch (err) {
+        title.innerText = "Python (Failed)";
+        out.innerText = ">>> Failed to load Pyodide CDN. Check internet connection or browser console.\n" + err;
+      } finally {
+        isPyodideLoading = false;
       }
     }
 
     async function runPythonCode() {
       const out = document.getElementById('py-output');
       const code = document.getElementById('py-editor').value;
+
       if (!pyodideInstance) {
-        out.innerText = ">>> Engine still initializing, wait 2 seconds...";
+        out.innerText = ">>> Engine is still loading. Please wait 5-10 seconds...";
+        await loadPythonEngine();
         return;
       }
 
-      out.innerText = ">>> Executing script...\n";
+      out.innerText = ">>> Running...\n";
+
       try {
-        pyodideInstance.setStdout({
-          batched: (str) => { out.innerText += str + "\n"; }
-        });
-        await pyodideInstance.runPythonAsync(code);
+        // Safe capture using Python's native sys.stdout redirection
+        pyodideInstance.globals.set("user_code", code);
+        const result = await pyodideInstance.runPythonAsync(`
+import sys
+import io
+
+_old_stdout = sys.stdout
+_old_stderr = sys.stderr
+sys.stdout = _captured_out = io.StringIO()
+sys.stderr = _captured_err = io.StringIO()
+
+try:
+    exec(user_code)
+except Exception as e:
+    import traceback
+    traceback.print_exc()
+
+sys.stdout = _old_stdout
+sys.stderr = _old_stderr
+
+_captured_out.getvalue() + _captured_err.getvalue()
+`);
+        out.innerText = result.trim() ? result : ">>> [Code finished with no output]";
       } catch (err) {
-        out.innerText += `\nRuntime Error:\n${err}`;
+        out.innerText = ">>> Execution Error:\n" + err;
       }
       out.scrollTop = out.scrollHeight;
     }
+
+    // Auto-load Python in background on page start
+    window.addEventListener('DOMContentLoaded', () => {
+      loadPythonEngine();
+    });
 
     // Wallpapers
     const wallpapers = {
@@ -645,7 +680,7 @@ print(f"Calculated Squares: {squares}")
           const quotes = ["Talk is cheap. Show me the code.", "Stay hungry, stay foolish.", "Simplicity is prerequisite for reliability."];
           termLogs.innerText += `"${quotes[Math.floor(Math.random()*quotes.length)]}"\n`;
         } else if (act === 'sysinfo') {
-          termLogs.innerText += `OS: AuraOS 2.0 Web Shell\nEngine: Pyodide + V8 Engine\nScreen: ${window.innerWidth}x${window.innerHeight}\n`;
+          termLogs.innerText += `OS: AuraOS 2.0 Web Shell\nEngine: Pyodide WASM + V8 Engine\nScreen: ${window.innerWidth}x${window.innerHeight}\n`;
         } else if (act === 'date') {
           termLogs.innerText += `${new Date().toLocaleString()}\n`;
         } else if (act === 'echo') {
@@ -714,12 +749,10 @@ print(f"Calculated Squares: {squares}")
       }
     });
 
-    // System Clock
     setInterval(() => {
       document.getElementById('clock').innerText = new Date().toLocaleTimeString();
     }, 1000);
 
-    // Initial Window Open
     openWin('win-pyidle');
   </script>
 </body>
