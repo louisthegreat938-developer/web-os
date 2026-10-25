@@ -2,11 +2,13 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>AuraOS 2.0</title>
+  <title>AuraOS 2.0 with Python IDLE</title>
+  <!-- Pyodide Engine: WebAssembly ke zariye browser mein Python chalane ke liye -->
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.25.0/full/pyodide.js"></script>
   <style>
     :root {
       --bg-gradient: radial-gradient(circle at 80% 20%, #1e1b4b, #0f172a 70%);
-      --surface: rgba(15, 23, 42, 0.78);
+      --surface: rgba(15, 23, 42, 0.82);
       --border: rgba(255, 255, 255, 0.12);
       --accent: #38bdf8;
       --text: #f8fafc;
@@ -25,7 +27,7 @@
       transition: background 0.4s ease;
     }
 
-    /* Desktop Grid */
+    /* Desktop Icons Area */
     #desktop {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: var(--taskbar-h);
@@ -64,6 +66,7 @@
       font-weight: 500;
       color: #cbd5e1;
       text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+      text-align: center;
     }
 
     /* Windows Architecture */
@@ -81,7 +84,6 @@
       flex-direction: column;
       z-index: 10;
       overflow: hidden;
-      transition: width 0.2s, height 0.2s, top 0.2s, left 0.2s;
     }
 
     .os-window.maximized {
@@ -124,7 +126,7 @@
       user-select: text;
     }
 
-    /* Scratchpad */
+    /* Smart Scratchpad */
     textarea.notepad-area {
       width: 100%; height: 100%;
       background: transparent;
@@ -158,7 +160,7 @@
       font-family: inherit;
     }
 
-    /* Vault Links */
+    /* Web Vault Links */
     .link-form { display: flex; gap: 8px; margin-bottom: 12px; }
     .link-input {
       flex: 1;
@@ -191,7 +193,7 @@
     .link-item a { color: var(--accent); text-decoration: none; }
     .link-del { cursor: pointer; color: #ef4444; font-weight: bold; }
 
-    /* Settings & Wallpapers */
+    /* Settings */
     .theme-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
     .theme-card {
       border: 1px solid var(--border);
@@ -209,7 +211,7 @@
       position: absolute;
       bottom: 0; left: 0; right: 0;
       height: var(--taskbar-h);
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.88);
       backdrop-filter: blur(16px);
       border-top: 1px solid var(--border);
       display: flex;
@@ -218,7 +220,7 @@
       padding: 0 12px;
       z-index: 999;
     }
-    .taskbar-left, .taskbar-center, .taskbar-right { display: flex; align-items: center; gap: 8px; }
+    .taskbar-left, .taskbar-right { display: flex; align-items: center; gap: 8px; }
     
     .start-btn {
       background: rgba(255, 255, 255, 0.08);
@@ -310,8 +312,12 @@
 </head>
 <body>
 
-  <!-- Desktop Grid -->
+  <!-- Desktop Icons -->
   <div id="desktop">
+    <div class="desktop-icon" onclick="openWin('win-pyidle')">
+      <div class="icon-box">🐍</div>
+      <span>Python IDLE</span>
+    </div>
     <div class="desktop-icon" onclick="openWin('win-notes')">
       <div class="icon-box">📝</div>
       <span>Notepad</span>
@@ -332,8 +338,9 @@
 
   <!-- Start Menu -->
   <div id="start-menu">
-    <input type="text" class="start-search" placeholder="Type to search system..." id="menu-search" oninput="filterStartMenu()" />
+    <input type="text" class="start-search" placeholder="Type to search..." id="menu-search" oninput="filterStartMenu()" />
     <div id="start-items">
+      <div class="start-menu-item" onclick="openWin('win-pyidle'); toggleStart();">🐍 <span>Python IDLE</span></div>
       <div class="start-menu-item" onclick="openWin('win-notes'); toggleStart();">📝 <span>Notepad</span></div>
       <div class="start-menu-item" onclick="openWin('win-term'); toggleStart();">💻 <span>Terminal</span></div>
       <div class="start-menu-item" onclick="openWin('win-links'); toggleStart();">🔗 <span>Link Vault</span></div>
@@ -341,8 +348,31 @@
     </div>
   </div>
 
+  <!-- Python IDLE Window -->
+  <div class="os-window" id="win-pyidle" style="top: 70px; left: 160px; width: 580px; height: 420px; display: none;">
+    <div class="win-header">
+      <div class="traffic-lights">
+        <button class="t-btn t-close" onclick="closeWin('win-pyidle')"></button>
+        <button class="t-btn t-min" onclick="minWin('win-pyidle')"></button>
+        <button class="t-btn t-max" onclick="maxWin('win-pyidle')"></button>
+      </div>
+      <span class="win-title">Python 3.11 Interactive IDLE</span>
+      <button class="btn-action" style="padding: 3px 12px; font-size: 11px;" onclick="runPythonCode()">▶ Run</button>
+    </div>
+    <div class="win-body" style="display: flex; flex-direction: column; gap: 8px; padding: 10px;">
+      <textarea id="py-editor" style="flex: 1; background: rgba(0,0,0,0.45); border: 1px solid var(--border); border-radius: 6px; padding: 10px; color: #38bdf8; font-family: 'Courier New', monospace; font-size: 13px; outline: none; resize: none; line-height: 1.4;" spellcheck="false"># Write pure Python code here
+name = "Hacker"
+print(f"Executing Python inside AuraOS, {name}!")
+
+squares = [x**2 for x in range(1, 6)]
+print(f"Calculated Squares: {squares}")
+</textarea>
+      <div style="height: 120px; background: rgba(0,0,0,0.65); border: 1px solid var(--border); border-radius: 6px; padding: 10px; overflow-y: auto; font-family: 'Courier New', monospace; font-size: 12px; color: #4ade80; white-space: pre-wrap;" id="py-output">>>> Python Engine ready to execute. Click '▶ Run'.</div>
+    </div>
+  </div>
+
   <!-- Notepad Window -->
-  <div class="os-window" id="win-notes" style="top: 60px; left: 120px;">
+  <div class="os-window" id="win-notes" style="top: 100px; left: 100px; display: none;">
     <div class="win-header">
       <div class="traffic-lights">
         <button class="t-btn t-close" onclick="closeWin('win-notes')"></button>
@@ -358,7 +388,7 @@
   </div>
 
   <!-- Terminal Window -->
-  <div class="os-window" id="win-term" style="top: 100px; left: 240px; display: none;">
+  <div class="os-window" id="win-term" style="top: 140px; left: 220px; display: none;">
     <div class="win-header">
       <div class="traffic-lights">
         <button class="t-btn t-close" onclick="closeWin('win-term')"></button>
@@ -379,8 +409,8 @@
     </div>
   </div>
 
-  <!-- Links Window -->
-  <div class="os-window" id="win-links" style="top: 140px; left: 360px; display: none;">
+  <!-- Links Vault Window -->
+  <div class="os-window" id="win-links" style="top: 180px; left: 340px; display: none;">
     <div class="win-header">
       <div class="traffic-lights">
         <button class="t-btn t-close" onclick="closeWin('win-links')"></button>
@@ -401,7 +431,7 @@
   </div>
 
   <!-- Settings Window -->
-  <div class="os-window" id="win-settings" style="top: 180px; left: 480px; display: none;">
+  <div class="os-window" id="win-settings" style="top: 220px; left: 460px; display: none;">
     <div class="win-header">
       <div class="traffic-lights">
         <button class="t-btn t-close" onclick="closeWin('win-settings')"></button>
@@ -449,7 +479,7 @@
 
   <script>
     let topZ = 10;
-    const windows = ['win-notes', 'win-term', 'win-links', 'win-settings'];
+    const windows = ['win-notes', 'win-term', 'win-links', 'win-settings', 'win-pyidle'];
 
     // Start Menu Toggle
     function toggleStart() {
@@ -470,30 +500,39 @@
       win.style.display = 'flex';
       focusWin(id);
       syncTaskbar();
+
+      // Python initialization on first open
+      if (id === 'win-pyidle' && !pyodideInstance) {
+        initPyodide();
+      }
     }
+
     function closeWin(id) {
       document.getElementById(id).style.display = 'none';
       syncTaskbar();
     }
+
     function minWin(id) {
       document.getElementById(id).style.display = 'none';
       syncTaskbar();
     }
+
     function maxWin(id) {
       document.getElementById(id).classList.toggle('maximized');
     }
+
     function focusWin(id) {
       document.getElementById(id).style.zIndex = ++topZ;
       syncTaskbar();
     }
 
-    // Dynamic Taskbar Sync
+    // Dynamic Taskbar Synchronization
     function syncTaskbar() {
       const container = document.getElementById('running-tasks');
       container.innerHTML = '';
       windows.forEach(wId => {
         const el = document.getElementById(wId);
-        if (el.style.display === 'flex') {
+        if (el && el.style.display === 'flex') {
           const title = el.querySelector('.win-title').innerText;
           const task = document.createElement('div');
           task.className = 'task-item' + (el.style.zIndex == topZ ? ' active' : '');
@@ -510,14 +549,16 @@
       });
     }
 
-    // Draggable Setup
+    // Draggable Windows
     windows.forEach(wId => {
       const win = document.getElementById(wId);
+      if (!win) return;
       win.addEventListener('mousedown', () => focusWin(wId));
       const head = win.querySelector('.win-header');
       let dragging = false, offset = [0, 0];
 
       head.addEventListener('mousedown', (e) => {
+        if (e.target.tagName === 'BUTTON') return;
         if (win.classList.contains('maximized')) return;
         dragging = true;
         offset = [win.offsetLeft - e.clientX, win.offsetTop - e.clientY];
@@ -529,6 +570,39 @@
       });
       window.addEventListener('mouseup', () => dragging = false);
     });
+
+    // Pyodide Python Runner Logic
+    let pyodideInstance = null;
+    async function initPyodide() {
+      const out = document.getElementById('py-output');
+      out.innerText = ">>> Loading Python WebAssembly Engine...";
+      try {
+        pyodideInstance = await loadPyodide();
+        out.innerText = ">>> Python 3.11 Loaded successfully!\n>>> Ready. Click '▶ Run' to execute code.";
+      } catch (e) {
+        out.innerText = ">>> Error loading Python runtime: " + e;
+      }
+    }
+
+    async function runPythonCode() {
+      const out = document.getElementById('py-output');
+      const code = document.getElementById('py-editor').value;
+      if (!pyodideInstance) {
+        out.innerText = ">>> Engine still initializing, wait 2 seconds...";
+        return;
+      }
+
+      out.innerText = ">>> Executing script...\n";
+      try {
+        pyodideInstance.setStdout({
+          batched: (str) => { out.innerText += str + "\n"; }
+        });
+        await pyodideInstance.runPythonAsync(code);
+      } catch (err) {
+        out.innerText += `\nRuntime Error:\n${err}`;
+      }
+      out.scrollTop = out.scrollHeight;
+    }
 
     // Wallpapers
     const wallpapers = {
@@ -571,7 +645,7 @@
           const quotes = ["Talk is cheap. Show me the code.", "Stay hungry, stay foolish.", "Simplicity is prerequisite for reliability."];
           termLogs.innerText += `"${quotes[Math.floor(Math.random()*quotes.length)]}"\n`;
         } else if (act === 'sysinfo') {
-          termLogs.innerText += `OS: AuraOS 2.0 Web Shell\nEngine: V8 Browser Engine\nScreen: ${window.innerWidth}x${window.innerHeight}\n`;
+          termLogs.innerText += `OS: AuraOS 2.0 Web Shell\nEngine: Pyodide + V8 Engine\nScreen: ${window.innerWidth}x${window.innerHeight}\n`;
         } else if (act === 'date') {
           termLogs.innerText += `${new Date().toLocaleString()}\n`;
         } else if (act === 'echo') {
@@ -644,7 +718,9 @@
     setInterval(() => {
       document.getElementById('clock').innerText = new Date().toLocaleTimeString();
     }, 1000);
-    syncTaskbar();
+
+    // Initial Window Open
+    openWin('win-pyidle');
   </script>
 </body>
 </html>
